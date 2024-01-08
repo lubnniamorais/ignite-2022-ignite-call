@@ -26,6 +26,7 @@ import {
   IntervalsContainer,
 } from './styles'
 import { convertTimeStringToMinutes } from '@/src/utils/convert-time-string-to-minutes'
+import { api } from '@/src/lib/axios'
 
 const timeIntervalsFormSchema = z.object({
   intervals: z
@@ -65,7 +66,7 @@ const timeIntervalsFormSchema = z.object({
     ),
 })
 
-// representa os dados de entrads
+// representa os dados de entrada
 type TimeIntervalsFormInput = z.input<typeof timeIntervalsFormSchema>
 
 // faz a mesma coisa que o infer, mas é mais semântico de ler
@@ -104,9 +105,9 @@ export default function TimeIntervals() {
   const intervals = watch('intervals')
 
   async function handleSetTimeIntervals(data: any) {
-    const formData = data as TimeIntervalsFormOutput
+    const { intervals } = data as TimeIntervalsFormOutput
 
-    console.log(formData)
+    await api.post('/users/time-intervals', { intervals })
   }
 
   return (
