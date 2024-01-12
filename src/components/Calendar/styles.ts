@@ -17,6 +17,7 @@ export const CalendarHeader = styled('div', {
 // Tag que apresenta o nome do mês
 export const CalendarTitle = styled(Text, {
   fontWeight: '$medium',
+  textTransform: 'capitalize',
 
   span: {
     color: '$gray200',
