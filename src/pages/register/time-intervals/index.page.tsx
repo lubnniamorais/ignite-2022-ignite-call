@@ -28,6 +28,7 @@ import {
 import { convertTimeStringToMinutes } from '@/src/utils/convert-time-string-to-minutes'
 import { api } from '@/src/lib/axios'
 import { useRouter } from 'next/router'
+import { NextSeo } from 'next-seo'
 
 const timeIntervalsFormSchema = z.object({
   intervals: z
@@ -117,6 +118,8 @@ export default function TimeIntervals() {
 
   return (
     <>
+      <NextSeo title="Selecione sua disponibilidade | Ignite Call" noindex />
+
       <Container>
         <Header>
           <Heading as="strong">Quase lá!</Heading>
