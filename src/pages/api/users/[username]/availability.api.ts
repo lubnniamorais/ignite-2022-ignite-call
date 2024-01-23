@@ -78,15 +78,5 @@ export default async function handler(
     },
   })
 
-  // const availableTimes = possibleTimes.filter((time) => {
-  //   const isTimedBlock = blockedTimes.some(
-  //     (blockedTime) => blockedTime.date.getHours() === time,
-  //   )
-
-  //   const isTimeInPast = referenceDate.set('hour', time).isBefore(new Date())
-
-  //   return !isTimedBlock && !isTimeInPast
-  // })
-
   return res.json({ possibleTimes, blockedTimes })
 }
