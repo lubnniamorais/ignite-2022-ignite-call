@@ -18,7 +18,7 @@ export default async function handler(
 
   // Se a data não for informada, então uma mensagem de erro será retornada.
   if (!date) {
-    return res.status(400).json({ message: 'Date not provided.' })
+    return res.status(400).json({ message: 'Date not provider.' })
   }
 
   const user = await prisma.user.findUnique({
@@ -57,11 +57,11 @@ export default async function handler(
   const startHour = time_start_in_minutes / 60
   const endHour = time_end_in_minutes / 60
 
+  // Como o índice começa em zero então é necessário realizar a soma para o primeiro horário,
+  // já sair correto, por exemplo: startHour + 10 = 10... 10 + 1 = 11h...
   const possibleTimes = Array.from({
     length: endHour - startHour,
   }).map((_, i) => {
-    // Como o índice começa em zero então é necessário realizar a soma para o primeiro horário,
-    // já sair correto, por exemplo: startHour + 10 = 10... 10 + 1 = 11h...
     return startHour + i
   })
 
@@ -78,15 +78,15 @@ export default async function handler(
     },
   })
 
-  const availableTimes = possibleTimes.filter((time) => {
-    const isTimedBlock = blockedTimes.some(
-      (blockedTime) => blockedTime.date.getHours() === time,
-    )
+  // const availableTimes = possibleTimes.filter((time) => {
+  //   const isTimedBlock = blockedTimes.some(
+  //     (blockedTime) => blockedTime.date.getHours() === time,
+  //   )
 
-    const isTimeInPast = referenceDate.set('hour', time).isBefore(new Date())
+  //   const isTimeInPast = referenceDate.set('hour', time).isBefore(new Date())
 
-    return !isTimedBlock && !isTimeInPast
-  })
+  //   return !isTimedBlock && !isTimeInPast
+  // })
 
-  return res.json({ possibleTimes, availableTimes })
+  return res.json({ possibleTimes, blockedTimes })
 }

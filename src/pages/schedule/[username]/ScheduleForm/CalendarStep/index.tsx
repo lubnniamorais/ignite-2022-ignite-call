@@ -1,6 +1,12 @@
+import dayjs from 'dayjs'
+import { useRouter } from 'next/router'
+import { useQuery } from '@tanstack/react-query'
+
+import { api } from '@/src/lib/axios'
+
 import { Calendar } from '@/src/components/Calendar'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import {
   Container,
@@ -10,13 +16,11 @@ import {
   TimePickerItem,
 } from './styles'
 
-import dayjs from 'dayjs'
-import { useRouter } from 'next/router'
-import { api } from '@/src/lib/axios'
-import { useQuery } from '@tanstack/react-query'
 interface Availability {
   possibleTimes: number[]
-  availableTimes: number[]
+  blockedTimes: { date: string }[]
+  startHour: number
+  endHour: number
 }
 
 interface CalendarStepProps {
@@ -54,6 +58,18 @@ export function CalendarStep({ onSelectDateTime }: CalendarStepProps) {
     enabled: !!selectedDate,
   })
 
+  const { possibleTimes, blockedTimes } = availability || {}
+
+  const availableTimes = possibleTimes?.filter((time) => {
+    const isTimedBlocked = blockedTimes?.some(
+      (blockedTime) => dayjs(blockedTime.date).hour() === time,
+    )
+
+    const isTimeInPast = dayjs(selectedDate).set('hour', time).isBefore(dayjs())
+
+    return !isTimedBlocked && !isTimeInPast
+  })
+
   function handleSelectTime(hour: number) {
     // Aqui estamos pegando a data selecionada e a hora selecionada e pegando o início da hora,
     // ou seja, a data vêm zerada, por exemplo: 08:00:00.
@@ -76,12 +92,12 @@ export function CalendarStep({ onSelectDateTime }: CalendarStepProps) {
           </TimePickerHeader>
 
           <TimePickerList>
-            {availability?.possibleTimes.map((hour) => {
+            {possibleTimes?.map((hour) => {
               return (
                 <TimePickerItem
                   key={hour}
                   onClick={() => handleSelectTime(hour)}
-                  disabled={!availability.availableTimes.includes(hour)}
+                  disabled={!availableTimes?.includes(hour)}
                 >
                   {String(hour).padStart(2, '0')}:00h
                 </TimePickerItem>
