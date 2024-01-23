@@ -17,10 +17,10 @@ import {
 } from './styles'
 
 interface Availability {
+  // horários possíveis
   possibleTimes: number[]
-  blockedTimes: { date: string }[]
-  startHour: number
-  endHour: number
+  // horários disponíveis
+  availableTimes: number[]
 }
 
 interface CalendarStepProps {
@@ -58,21 +58,21 @@ export function CalendarStep({ onSelectDateTime }: CalendarStepProps) {
     enabled: !!selectedDate,
   })
 
-  const { possibleTimes, blockedTimes } = availability || {}
+  // const { possibleTimes, blockedTimes } = availability || {}
 
-  const availableTimes = possibleTimes?.filter((time) => {
-    const isTimedBlocked = blockedTimes?.some(
-      (blockedTime) => dayjs(blockedTime.date).hour() === time,
-    )
+  // const availableTimes = possibleTimes?.filter((time) => {
+  //   const isTimedBlocked = blockedTimes?.some(
+  //     (blockedTime) => dayjs(blockedTime.date).hour() === time,
+  //   )
 
-    const isTimeInPast = dayjs(selectedDate).set('hour', time).isBefore(dayjs())
+  //   const isTimeInPast = dayjs(selectedDate).set('hour', time).isBefore(dayjs())
 
-    return !isTimedBlocked && !isTimeInPast
-  })
+  //   return !isTimedBlocked && !isTimeInPast
+  // })
 
+  // Aqui estamos pegando a data selecionada e a hora selecionada e pegando o início da hora,
+  // ou seja, a data vêm zerada, por exemplo: 08:00:00.
   function handleSelectTime(hour: number) {
-    // Aqui estamos pegando a data selecionada e a hora selecionada e pegando o início da hora,
-    // ou seja, a data vêm zerada, por exemplo: 08:00:00.
     const dateWithTime = dayjs(selectedDate)
       .set('hour', hour)
       .startOf('hour')
@@ -92,12 +92,14 @@ export function CalendarStep({ onSelectDateTime }: CalendarStepProps) {
           </TimePickerHeader>
 
           <TimePickerList>
-            {possibleTimes?.map((hour) => {
+            {availability?.possibleTimes.map((hour) => {
               return (
                 <TimePickerItem
                   key={hour}
-                  onClick={() => handleSelectTime(hour)}
-                  disabled={!availableTimes?.includes(hour)}
+                  disabled={!availability.availableTimes.includes(hour)}
+                  onClick={() => {
+                    handleSelectTime(hour)
+                  }}
                 >
                   {String(hour).padStart(2, '0')}:00h
                 </TimePickerItem>
