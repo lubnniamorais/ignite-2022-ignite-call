@@ -50,6 +50,7 @@ export function CalendarStep({ onSelectDateTime }: CalendarStepProps) {
       const response = await api.get(`/users/${username}/availability`, {
         params: {
           date: selectedDateWithoutTime,
+          timezoneOffset: selectedDate ? selectedDate.getTimezoneOffset() : 0,
         },
       })
 
@@ -57,18 +58,6 @@ export function CalendarStep({ onSelectDateTime }: CalendarStepProps) {
     },
     enabled: !!selectedDate,
   })
-
-  // const { possibleTimes, blockedTimes } = availability || {}
-
-  // const availableTimes = possibleTimes?.filter((time) => {
-  //   const isTimedBlocked = blockedTimes?.some(
-  //     (blockedTime) => dayjs(blockedTime.date).hour() === time,
-  //   )
-
-  //   const isTimeInPast = dayjs(selectedDate).set('hour', time).isBefore(dayjs())
-
-  //   return !isTimedBlocked && !isTimeInPast
-  // })
 
   // Aqui estamos pegando a data selecionada e a hora selecionada e pegando o início da hora,
   // ou seja, a data vêm zerada, por exemplo: 08:00:00.

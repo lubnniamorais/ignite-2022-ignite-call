@@ -1,6 +1,12 @@
-import { prisma } from '@/src/lib/prisma'
-import dayjs from 'dayjs'
 import { NextApiRequest, NextApiResponse } from 'next'
+
+import { prisma } from '@/src/lib/prisma'
+
+import dayjs from 'dayjs'
+
+import utc from 'dayjs/plugin/utc'
+
+dayjs.extend(utc)
 
 export default async function handler(
   req: NextApiRequest,
@@ -14,11 +20,13 @@ export default async function handler(
   const username = String(req.query.username)
 
   // Buscando a data via parâmetro
-  const { date } = req.query
+  const { date, timezoneOffset } = req.query
 
   // Se a data não for informada, então uma mensagem de erro será retornada.
-  if (!date) {
-    return res.status(400).json({ message: 'Date not provider.' })
+  if (!date || !timezoneOffset) {
+    return res
+      .status(400)
+      .json({ message: 'Date or timezoneOffset not provided.' })
   }
 
   const user = await prisma.user.findUnique({
@@ -37,6 +45,14 @@ export default async function handler(
   // array de disponibilidade vazio, ou seja, não existe disponibilidade nenhuma nesse dia.
   // VALIDAR SE É UMA DATA QUE JÁ PASSOU, NÃO TER NENHUM HORÁRIO DISPONÍVEL
   const isPastDate = referenceDate.endOf('day').isBefore(new Date())
+
+  const timezoneOffsetInHours =
+    typeof timezoneOffset === 'string'
+      ? Number(timezoneOffset) / 60
+      : Number(timezoneOffset[0]) / 60
+
+  const referenceDateTimeZoneOffsetInHours =
+    referenceDate.toDate().getTimezoneOffset() / 60
 
   if (isPastDate) {
     return res.json({ possibleTimes: [], availability: [] })
@@ -92,8 +108,14 @@ export default async function handler(
     where: {
       user_id: user.id,
       date: {
-        gte: referenceDate.set('hour', startHour).toDate(),
-        lte: referenceDate.set('hour', endHour).toDate(),
+        gte: referenceDate
+          .set('hour', startHour)
+          .add(timezoneOffsetInHours, 'hours')
+          .toDate(),
+        lte: referenceDate
+          .set('hour', endHour)
+          .add(timezoneOffsetInHours, 'hours')
+          .toDate(),
       },
     },
   })
@@ -103,11 +125,15 @@ export default async function handler(
   const availableTimes = possibleTimes.filter((time) => {
     // manter apenas quando não existe
     const isTimeBlocked = blockedTimes.some(
-      (blockedTime) => blockedTime.date.getHours() === time,
+      (blockedTime) =>
+        blockedTime.date.getUTCHours() - timezoneOffsetInHours === time,
     )
 
     // verifica horário se já passou
-    const isTimeInPast = referenceDate.set('hour', time).isBefore(new Date())
+    const isTimeInPast = referenceDate
+      .set('hour', time)
+      .subtract(referenceDateTimeZoneOffsetInHours, 'hours')
+      .isBefore(dayjs().utc().subtract(timezoneOffsetInHours, 'hours'))
 
     return !isTimeBlocked && !isTimeInPast
   })
